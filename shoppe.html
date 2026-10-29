@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokoKita - E-Commerce Lengkap & Varian Ukuran</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 pb-16">
+
+    <!-- HEADER / NAVBAR -->
+    <header class="bg-orange-600 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <!-- Logo -->
+            <a href="#" class="text-2xl font-bold tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-bag-shopping"></i> TokoKita
+            </a>
+
+            <!-- Search Bar -->
+            <div class="flex-1 max-w-xl relative">
+                <input type="text" id="searchInput" oninput="renderProducts()" placeholder="Cari produk, merek, atau ukuran..." 
+                       class="w-full py-2 px-4 pr-10 rounded-sm text-gray-800 text-sm focus:outline-none shadow-inner">
+                <button class="absolute right-0 top-0 h-full px-4 text-orange-600 font-bold">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+
+            <!-- Tombol Navigasi Kanan -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleOrdersModal()" class="relative flex items-center gap-1.5 bg-orange-700 hover:bg-orange-800 px-3 py-2 rounded-md transition text-xs md:text-sm">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span class="hidden md:inline font-semibold">Pesanan</span>
+                    <span id="orderBadge" class="bg-yellow-400 text-orange-900 font-bold text-[10px] rounded-full px-1.5 py-0.2 absolute -top-1.5 -right-1.5 border border-orange-600 hidden">0</span>
+                </button>
+                <button onclick="toggleCartModal()" class="relative flex items-center gap-1.5 bg-orange-700 hover:bg-orange-800 px-3 py-2 rounded-md transition text-xs md:text-sm">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="hidden md:inline font-semibold">Keranjang</span>
+                    <span id="cartBadge" class="bg-yellow-400 text-orange-900 font-bold text-xs rounded-full px-2 py-0.5 absolute -top-2 -right-2 border-2 border-orange-600 hidden">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- BANNER PROMO -->
+    <section class="max-w-6xl mx-auto px-4 mt-6">
+        <div class="bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg p-6 text-white shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <span class="bg-yellow-400 text-orange-900 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Promo Spesial</span>
+                <h1 class="text-2xl md:text-3xl font-extrabold mt-2">Diskon Hingga 70% & Gratis Ongkir!</h1>
+                <p class="text-sm opacity-90 mt-1">Klaim voucher diskon tambahan untuk belanja lebih hemat.</p>
+            </div>
+            <button onclick="claimVoucher()" id="voucherBtn" class="bg-white text-orange-600 font-bold px-6 py-2.5 rounded-md hover:bg-gray-100 shadow transition whitespace-nowrap">
+                Klaim Voucher Diskon
+            </button>
+        </div>
+    </section>
+
+    <!-- FILTER KATEGORI -->
+    <section class="max-w-6xl mx-auto px-4 mt-6">
+        <h2 class="text-lg font-bold mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-list-ul text-orange-600"></i> Kategori Populer
+        </h2>
+        <div class="flex gap-2 overflow-x-auto pb-2" id="categoryContainer"></div>
+    </section>
+
+    <!-- DAFTAR PRODUK -->
+    <main class="max-w-6xl mx-auto px-4 mt-6">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-fire text-orange-600"></i> Rekomendasi Untukmu
+        </h2>
+        <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+    </main>
+
+    <!-- MODAL DETAIL PRODUK (Pilih Ukuran, Qty, & Ulasan) -->
+    <div id="productDetailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-center items-center p-4">
+        <div class="bg-white w-full max-w-xl rounded-lg shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="p-4 bg-orange-600 text-white flex justify-between items-center">
+                <h3 class="font-bold text-lg"><i class="fa-solid fa-info-circle"></i> Pilih Variasi Produk</h3>
+                <button onclick="toggleProductDetailModal()" class="text-2xl hover:text-gray-200">&times;</button>
+            </div>
+            
+            <div id="detailContent" class="p-6 overflow-y-auto space-y-4 flex-1">
+                <!-- Diisi via JavaScript -->
+            </div>
+
+            <div class="p-4 border-t bg-gray-50 flex gap-3">
+                <button onclick="addCurrentToCartFromModal()" class="flex-1 bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-600 font-bold py-2.5 rounded-md transition text-sm">
+                    + Masukkan Keranjang
+                </button>
+                <button onclick="buyCurrentFromModal()" class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 rounded-md transition text-sm shadow">
+                    Beli Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KERANJANG BELANJA -->
+    <div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-end transition-opacity">
+        <div class="bg-white w-full max-w-md h-full flex flex-col shadow-xl">
+            <div class="p-4 bg-orange-600 text-white flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-cart-shopping"></i> Keranjang Belanja
+                </h3>
+                <button onclick="toggleCartModal()" class="text-2xl hover:text-gray-200">&times;</button>
+            </div>
+            <div id="cartItemsList" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+            <div class="p-4 border-t bg-gray-50">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-gray-600 font-medium">Total Pembayaran:</span>
+                    <span id="cartTotalPrice" class="text-xl font-bold text-orange-600">Rp 0</span>
+                </div>
+                <button onclick="checkoutCart()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-md transition text-center shadow">
+                    Checkout Semua Keranjang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CHECKOUT, PEMBAYARAN, & ONGKIR -->
+    <div id="checkoutModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-center items-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-lg shadow-xl overflow-hidden">
+            <div class="p-4 bg-orange-600 text-white flex justify-between items-center">
+                <h3 class="font-bold text-lg"><i class="fa-solid fa-bag-shopping"></i> Checkout Pesanan</h3>
+                <button onclick="toggleCheckoutModal()" class="text-2xl hover:text-gray-200">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                <!-- Ringkasan Produk -->
+                <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-md border">
+                    <img id="checkoutImg" src="" class="w-16 h-16 object-cover rounded">
+                    <div>
+                        <h4 id="checkoutTitle" class="font-bold text-sm text-gray-800"></h4>
+                        <span id="checkoutPriceItem" class="text-orange-600 font-bold text-sm"></span>
+                        <div id="checkoutVariantInfo" class="text-xs text-gray-500 mt-0.5"></div>
+                    </div>
+                </div>
+
+                <!-- Form Alamat & Pengiriman -->
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nama Penerima</label>
+                        <input type="text" id="buyerName" placeholder="Nama lengkap Anda" class="w-full p-2 border rounded text-sm focus:outline-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nomor HP / WhatsApp</label>
+                        <input type="text" id="buyerPhone" placeholder="Contoh: 081234567890" class="w-full p-2 border rounded text-sm focus:outline-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Alamat Lengkap Pengiriman</label>
+                        <textarea id="buyerAddress" rows="2" placeholder="Jalan, No. Rumah, Kecamatan, Kota..." class="w-full p-2 border rounded text-sm focus:outline-orange-500"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Pilih Kurir (Ongkir)</label>
+                            <select id="shippingCourier" onchange="calculateTotal()" class="w-full p-2 border rounded text-sm focus:outline-orange-500">
+                                <option value="15000">JNE Regular (Rp 15.000)</option>
+                                <option value="18000">J&T Express (Rp 18.000)</option>
+                                <option value="10000">SiCepat HALU (Rp 10.000)</option>
+                                <option value="0">Ambil Sendiri (Rp 0)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Metode Pembayaran</label>
+                            <select id="paymentMethod" class="w-full p-2 border rounded text-sm focus:outline-orange-500">
+                                <option value="COD">COD (Bayar di Tempat)</option>
+                                <option value="QRIS">QRIS (GoPay/OVO/Dana/ShopeePay)</option>
+                                <option value="Transfer BCA">Transfer Bank BCA</option>
+                                <option value="Transfer Mandiri">Transfer Bank Mandiri</option>
+                                <option value="Indomaret / Alfamart">Minimarket (Indomaret/Alfamart)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rincian Biaya -->
+                <div class="bg-gray-50 p-3 rounded-md border text-xs space-y-1.5">
+                    <div class="flex justify-between"><span>Subtotal Produk:</span> <span id="summarySubtotal">Rp 0</span></div>
+                    <div class="flex justify-between"><span>Biaya Pengiriman:</span> <span id="summaryShipping">Rp 0</span></div>
+                    <div class="flex justify-between text-green-600 font-semibold" id="voucherDiscountRow" style="display:none;">
+                        <span>Diskon Voucher:</span> <span id="summaryDiscount">-Rp 10.000</span>
+                    </div>
+                    <div class="border-t pt-2 flex justify-between items-center font-bold text-sm text-gray-800">
+                        <span>Total Tagihan:</span>
+                        <span id="checkoutTotal" class="text-orange-600 text-base">Rp 0</span>
+                    </div>
+                </div>
+
+                <button onclick="processOrder()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-md transition shadow text-sm">
+                    Buat Pesanan Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RIWAYAT PESANAN SAYA -->
+    <div id="ordersModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-end transition-opacity">
+        <div class="bg-white w-full max-w-md h-full flex flex-col shadow-xl">
+            <div class="p-4 bg-orange-600 text-white flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-box-archive"></i> Status Pesanan Saya
+                </h3>
+                <button onclick="toggleOrdersModal()" class="text-2xl hover:text-gray-200">&times;</button>
+            </div>
+            <div id="ordersList" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const products = [
+            { 
+                id: 1, name: "Sepatu Sneaker Casual", price: 185000, category: "Fashion", rating: 4.8, sold: 1200, 
+                image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
+                desc: "Sepatu sneaker casual berkualitas tinggi, sangat nyaman dipakai untuk jalan-jalan atau olahraga.",
+                sizes: ["39", "40", "41", "42", "43"]
+            },
+            { 
+                id: 2, name: "Smartwatch Sport IP67", price: 299000, category: "Elektronik", rating: 4.9, sold: 850, 
+                image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+                desc: "Jam tangan pintar dengan fitur pemantau detak jantung dan tahan air.",
+                sizes: ["Standard"]
+            },
+            { 
+                id: 3, name: "Kemeja Oversized Unisex", price: 99000, category: "Fashion", rating: 4.7, sold: 2300, 
+                image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400",
+                desc: "Kemeja bergaya oversized kekinian yang cocok dipakai Pria maupun Wanita.",
+                sizes: ["M", "L", "XL"]
+            },
+            { 
+                id: 4, name: "Headphone Bluetooth Wireless", price: 245000, category: "Elektronik", rating: 4.8, sold: 640, 
+                image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+                desc: "Headphone nirkabel dengan teknologi Bass Mendalam dan baterai tahan lama.",
+                sizes: ["Standard"]
+            },
+            { 
+                id: 5, name: "Botol Minum Tumbler 1L", price: 45000, category: "Gaya Hidup", rating: 4.6, sold: 3100, 
+                image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400",
+                desc: "Tumbler stainless steel tahan panas dan dingin berkapasitas 1000ml.",
+                sizes: ["1000ml"]
+            },
+            { 
+                id: 6, name: "Tas Ransel Laptop Waterproof", price: 150000, category: "Gaya Hidup", rating: 4.9, sold: 980, 
+                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400",
+                desc: "Tas ransel multifungsi dengan kompartemen laptop dan bahan anti-air.",
+                sizes: ["Standard"]
+            }
+        ];
+
+        let cart = [];
+        let orders = [];
+        let selectedCategory = "Semua";
+        let hasVoucher = false;
+
+        let activeProductModal = null;
+        let selectedSizeModal = "";
+        let modalQty = 1;
+
+        let activeCheckoutData = null;
+
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number);
+        }
+
+        function claimVoucher() {
+            hasVoucher = true;
+            const btn = document.getElementById("voucherBtn");
+            btn.innerText = "Voucher Aktif (-Rp 10.000)";
+            btn.classList.replace("bg-white", "bg-green-700");
+            btn.classList.replace("text-orange-600", "text-white");
+            alert("Berhasil! Voucher diskon Rp 10.000 telah diklaim dan akan otomatis terpotong saat checkout.");
+        }
+
+        function renderCategories() {
+            const categories = ["Semua", "Fashion", "Elektronik", "Gaya Hidup"];
+            const container = document.getElementById("categoryContainer");
+            container.innerHTML = categories.map(cat => `
+                <button onclick="selectCategory('${cat}')" 
+                        class="px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition ${selectedCategory === cat ? 'bg-orange-600 text-white shadow' : 'bg-white text-gray-600 hover:bg-gray-200'}">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function selectCategory(cat) {
+            selectedCategory = cat;
+            renderCategories();
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById("productGrid");
+            const searchQuery = document.getElementById("searchInput").value.toLowerCase();
+
+            const filtered = products.filter(p => {
+                const matchCategory = selectedCategory === "Semua" || p.category === selectedCategory;
+                const matchSearch = p.name.toLowerCase().includes(searchQuery);
+                return matchCategory && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500">Produk tidak ditemukan.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-white rounded-md shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition flex flex-col justify-between">
+                    <div onclick="openProductDetail(${p.id})" class="cursor-pointer">
+                        <img src="${p.image}" alt="${p.name}" class="w-full h-40 object-cover">
+                        <div class="p-3">
+                            <h3 class="text-sm font-semibold text-gray-800 line-clamp-2">${p.name}</h3>
+                            <div class="text-orange-600 font-bold text-base mt-2">${formatRupiah(p.price)}</div>
+                            <div class="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                                <span class="text-amber-400"><i class="fa-solid fa-star"></i> ${p.rating}</span>
+                                <span>•</span>
+                                <span>${p.sold} Terjual</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 pt-0 flex gap-1.5">
+                        <button onclick="openProductDetail(${p.id})" class="flex-1 bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-600 font-semibold py-1.5 rounded text-xs transition text-center">
+                            + Keranjang
+                        </button>
+                        <button onclick="openProductDetail(${p.id})" class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-1.5 rounded text-xs transition text-center shadow">
+                            Beli
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // BUKA MODAL DETAIL PRODUK (PILIH UKURAN & JUMLAH)
+        function openProductDetail(productId) {
+            activeProductModal = products.find(prod => prod.id === productId);
+            selectedSizeModal = activeProductModal.sizes[0];
+            modalQty = 1;
+            updateModalDetailUI();
+            toggleProductDetailModal();
+        }
+
+        function updateModalDetailUI() {
+            const p = activeProductModal;
+            const content = document.getElementById("detailContent");
+            
+            content.innerHTML = `
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <img src="${p.image}" class="w-full sm:w-1/2 h-48 object-cover rounded-md border">
+                    <div class="space-y-1.5 flex-1">
+                        <span class="bg-orange-100 text-orange-600 text-xs font-bold px-2 py-0.5 rounded">${p.category}</span>
+                        <h2 class="text-lg font-bold text-gray-800">${p.name}</h2>
+                        <div class="text-xl font-extrabold text-orange-600">${formatRupiah(p.price)}</div>
+                        <p class="text-xs text-gray-600 pt-1">${p.desc}</p>
+                    </div>
+                </div>
+
+                <!-- PILIH UKURAN -->
+                <div class="pt-2 border-t">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Pilih Ukuran / Varian:</label>
+                    <div class="flex flex-wrap gap-2" id="sizeOptionsContainer">
+                        ${p.sizes.map(sz => `
+                            <button onclick="selectSize('${sz}')" class="px-3 py-1.5 border rounded text-xs font-bold transition ${selectedSizeModal === sz ? 'bg-orange-600 text-white border-orange-600 shadow' : 'bg-white text-gray-700 hover:bg-gray-100'}">
+                                ${sz}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- PILIH JUMLAH (QTY) -->
+                <div class="pt-2 border-t flex justify-between items-center">
+                    <label class="text-xs font-semibold text-gray-700">Atur Jumlah Pesanan:</label>
+                    <div class="flex items-center gap-2">
+                        <button onclick="changeModalQty(-1)" class="w-7 h-7 bg-gray-200 rounded font-bold text-sm">-</button>
+                        <span class="text-sm font-bold w-6 text-center" id="modalQtyDisplay">${modalQty}</span>
+                        <button onclick="changeModalQty(1)" class="w-7 h-7 bg-gray-200 rounded font-bold text-sm">+</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectSize(sz) {
+            selectedSizeModal = sz;
+            updateModalDetailUI();
+        }
+
+        function changeModalQty(delta) {
+            modalQty += delta;
+            if (modalQty < 1) modalQty = 1;
+            document.getElementById("modalQtyDisplay").innerText = modalQty;
+        }
+
+        function toggleProductDetailModal() {
+            document.getElementById("productDetailModal").classList.toggle("hidden");
+        }
+
+        function addCurrentToCartFromModal() {
+            const p = activeProductModal;
+            const existing = cart.find(item => item.id === p.id && item.size === selectedSizeModal);
+            if (existing) {
+                existing.qty += modalQty;
+            } else {
+                cart.push({ ...p, size: selectedSizeModal, qty: modalQty });
+            }
+            updateCartUI();
+            toggleProductDetailModal();
+            alert(`Berhasil menambahkan ${modalQty}x ${p.name} (Ukuran: ${selectedSizeModal}) ke keranjang!`);
+        }
+
+        function buyCurrentFromModal() {
+            const p = activeProductModal;
+            toggleProductDetailModal();
+            activeCheckoutData = { isCart: false, product: p, size: selectedSizeModal, qty: modalQty };
+            setupCheckoutModal();
+        }
+
+        // KERANJANG
+        function updateCartUI() {
+            const totalItems = cart.reduce((sum, item) => sum += item.qty, 0);
+            const badge = document.getElementById("cartBadge");
+            badge.innerText = totalItems;
+            badge.classList.toggle("hidden", totalItems === 0);
+
+            const listContainer = document.getElementById("cartItemsList");
+            if (cart.length === 0) {
+                listContainer.innerHTML = `<p class="text-center text-gray-400 py-8">Keranjang belanja Anda masih kosong.</p>`;
+            } else {
+                listContainer.innerHTML = cart.map(item => `
+                    <div class="flex items-center justify-between border-b pb-3 gap-2">
+                        <div class="flex items-center gap-2">
+                            <img src="${item.image}" class="w-12 h-12 rounded object-cover">
+                            <div>
+                                <h4 class="text-xs font-semibold text-gray-800 line-clamp-1">${item.name}</h4>
+                                <span class="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">Ukuran: ${item.size}</span>
+                                <div class="text-xs text-orange-600 font-bold">${formatRupiah(item.price)}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="changeCartQty(${item.id}, '${item.size}', -1)" class="w-5 h-5 bg-gray-200 rounded text-xs font-bold">-</button>
+                            <span class="text-xs font-semibold px-1">${item.qty}</span>
+                            <button onclick="changeCartQty(${item.id}, '${item.size}', 1)" class="w-5 h-5 bg-gray-200 rounded text-xs font-bold">+</button>
+                            <button onclick="buyCartItem('${item.id}', '${item.size}')" class="bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-bold px-2 py-1 rounded transition ml-1">
+                                Beli
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            document.getElementById("cartTotalPrice").innerText = formatRupiah(totalPrice);
+        }
+
+        function changeCartQty(productId, size, delta) {
+            const item = cart.find(i => i.id === productId && i.size === size);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) {
+                    cart = cart.filter(i => !(i.id === productId && i.size === size));
+                }
+            }
+            updateCartUI();
+        }
+
+        function toggleCartModal() {
+            document.getElementById("cartModal").classList.toggle("hidden");
+        }
+
+        function buyCartItem(productId, size) {
+            const item = cart.find(i => i.id == productId && i.size == size);
+            if (!item) return;
+            toggleCartModal();
+            activeCheckoutData = { isCart: false, product: item, size: item.size, qty: item.qty };
+            setupCheckoutModal();
+        }
+
+        function checkoutCart() {
+            if (cart.length === 0) {
+                alert("Keranjang belanja masih kosong!");
+                return;
+            }
+            toggleCartModal();
+            activeCheckoutData = { isCart: true };
+            setupCheckoutModal();
+        }
+
+        // CHECKOUT & PEMBAYARAN
+        function setupCheckoutModal() {
+            if (activeCheckoutData.isCart) {
+                const totalSub = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+                document.getElementById("checkoutImg").src = cart[0].image;
+                document.getElementById("checkoutTitle").innerText = `Semua Keranjang (${cart.length} Jenis Produk)`;
+                document.getElementById("checkoutPriceItem").innerText = formatRupiah(totalSub);
+                document.getElementById("checkoutVariantInfo").innerText = `Total Item Keseluruhan: ${cart.reduce((s, i) => s + i.qty, 0)}`;
+            } else {
+                const p = activeCheckoutData.product;
+                document.getElementById("checkoutImg").src = p.image;
+                document.getElementById("checkoutTitle").innerText = p.name;
+                document.getElementById("checkoutPriceItem").innerText = formatRupiah(p.price);
+                document.getElementById("checkoutVariantInfo").innerText = `Ukuran: ${activeCheckoutData.size} | Jumlah: ${activeCheckoutData.qty}x`;
+            }
+
+            document.getElementById("shippingCourier").value = "15000";
+            calculateTotal();
+            toggleCheckoutModal();
+        }
+
+        function calculateTotal() {
+            let subtotal = 0;
+            if (activeCheckoutData.isCart) {
+                subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            } else {
+                subtotal = activeCheckoutData.product.price * activeCheckoutData.qty;
+            }
+
+            const shipping = parseInt(document.getElementById("shippingCourier").value);
+            const discount = hasVoucher ? 10000 : 0;
+
+            document.getElementById("summarySubtotal").innerText = formatRupiah(subtotal);
+            document.getElementById("summaryShipping").innerText = formatRupiah(shipping);
+
+            const discountRow = document.getElementById("voucherDiscountRow");
+            if (hasVoucher) {
+                discountRow.style.display = "flex";
+                document.getElementById("summaryDiscount").innerText = `-` + formatRupiah(discount);
+            } else {
+                discountRow.style.display = "none";
+            }
+
+            let grandTotal = (subtotal + shipping) - discount;
+            if (grandTotal < 0) grandTotal = 0;
+
+            document.getElementById("checkoutTotal").innerText = formatRupiah(grandTotal);
+        }
+
+        function toggleCheckoutModal() {
+            document.getElementById("checkoutModal").classList.toggle("hidden");
+        }
+
+        function processOrder() {
+            const name = document.getElementById("buyerName").value.trim();
+            const phone = document.getElementById("buyerPhone").value.trim();
+            const address = document.getElementById("buyerAddress").value.trim();
+            const payment = document.getElementById("paymentMethod").value;
+            const courierText = document.getElementById("shippingCourier").selectedOptions[0].text;
+            const totalText = document.getElementById("checkoutTotal").innerText;
+
+            if (!name || !phone || !address) {
+                alert("Mohon lengkapi Nama, Nomor HP, dan Alamat pengiriman dengan benar!");
+                return;
+            }
+
+            let orderItemName = "";
+            if (activeCheckoutData.isCart) {
+                orderItemName = `${cart.length} Macam Produk dalam Keranjang`;
+                cart = [];
+                updateCartUI();
+            } else {
+                orderItemName = `${activeCheckoutData.product.name} (Ukuran: ${activeCheckoutData.size}, Qty: ${activeCheckoutData.qty}x)`;
+            }
+
+            const newOrder = {
+                id: "ORD-" + Math.floor(100000 + Math.random() * 900000),
+                itemName: orderItemName,
+                total: totalText,
+                courier: courierText,
+                payment: payment,
+                address: address,
+                status: payment === "COD" ? "Sedang Dikemas" : "Menunggu Pembayaran"
+            };
+
+            orders.unshift(newOrder);
+            updateOrdersUI();
+
+            alert(`Pesanan Berhasil Dibuat!\nNo. Pesanan: ${newOrder.id}\nMetode Pembayaran: ${payment}\nStatus: ${newOrder.status}\n\nSilakan cek menu "Pesanan" di kanan atas.`);
+            toggleCheckoutModal();
+        }
+
+        // RIWAYAT PESANAN
+        function updateOrdersUI() {
+            const badge = document.getElementById("orderBadge");
+            badge.innerText = orders.length;
+            badge.classList.toggle("hidden", orders.length === 0);
+
+            const list = document.getElementById("ordersList");
+            if (orders.length === 0) {
+                list.innerHTML = `<p class="text-center text-gray-400 py-8">Belum ada riwayat pesanan.</p>`;
+                return;
+            }
+
+            list.innerHTML = orders.map(o => `
+                <div class="bg-gray-50 border p-3 rounded-md space-y-2 text-xs">
+                    <div class="flex justify-between items-center font-bold text-gray-700 border-b pb-1">
+                        <span>${o.id}</span>
+                        <span class="bg-orange-100 text-orange-700 px-2 py-0.5 rounded">${o.status}</span>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-800">${o.itemName}</div>
+                        <div class="text-gray-500">Kurir: ${o.courier}</div>
+                        <div class="text-gray-500 font-medium text-orange-600">Pembayaran: ${o.payment}</div>
+                        <div class="text-gray-500 truncate">Alamat: ${o.address}</div>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t font-bold">
+                        <span>Total:</span>
+                        <span class="text-orange-600 text-sm">${o.total}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleOrdersModal() {
+            document.getElementById("ordersModal").classList.toggle("hidden");
+        }
+
+        // Inisialisasi awal
+        renderCategories();
+        renderProducts();
+        updateCartUI();
+        updateOrdersUI();
+    </script>
+</body>
+</html>
